@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"sync/atomic"
 )
 
 func main() {
@@ -10,13 +11,16 @@ func main() {
 		Addr:    ":8080",
 		Handler: mux,
 	}
+	apiCfg := apiConfig{
+		fileserverHits: atomic.Int32{},
+	}
+	fileServer := http.StripPrefix("/app", http.FileServer(http.Dir(".")))
 
-	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir("."))))
-	mux.HandleFunc("/healthz/", func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK")) // handle errors here later?
-	})
+	mux.Handle("/app/", apiCfg.middlewareMetricsInc(fileServer))
+	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
+	mux.HandleFunc("POST /admin/reset", apiCfg.handlerResetMetrics)
+	mux.HandleFunc("GET /api/healthz", health)
+	mux.HandleFunc("GET /api/validate_chirp", validate)
 
 	server.ListenAndServe()
 }
