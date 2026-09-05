@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 )
 
 type ReqBody struct {
@@ -14,6 +16,9 @@ type RespErr struct {
 }
 type RespValid struct {
 	Valid bool `json:"valid"`
+}
+type CleanBody struct {
+	CleanedBody string `json:"cleaned_body"`
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
@@ -34,4 +39,23 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(dat)
+}
+
+func cleanChirp(msg string) string {
+	badWords := []string{
+		"kerfuffle",
+		"sharbert",
+		"fornax",
+	}
+	words := strings.Split(msg, " ")
+	cleanWords := make([]string, 0)
+
+	for _, word := range words {
+		if slices.Contains(badWords, strings.ToLower(word)) {
+			cleanWords = append(cleanWords, "****")
+		} else {
+			cleanWords = append(cleanWords, word)
+		}
+	}
+	return strings.Join(cleanWords, " ")
 }

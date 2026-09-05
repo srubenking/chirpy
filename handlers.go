@@ -58,8 +58,8 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid := RespValid{
-		Valid: true,
+	cleanBody := CleanBody{
+		CleanedBody: cleanChirp(body.Body),
 	}
-	respondWithJSON(w, 200, valid)
+	respondWithJSON(w, 200, cleanBody)
 }
