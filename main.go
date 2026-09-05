@@ -20,7 +20,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerResetMetrics)
 	mux.HandleFunc("GET /api/healthz", health)
-	mux.HandleFunc("GET /api/validate_chirp", validate)
+	mux.HandleFunc("POST /api/validate_chirp", validate)
 
 	server.ListenAndServe()
 }
